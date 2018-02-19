@@ -12,8 +12,8 @@ license=('MIT')
 depends=('xorg-server' 'libx11')
 md5sums=('SKIP')
 
-source=("git://github.com/TAAPArthur/mpx-patch.git")
-_srcDir="mpx-patch"
+source=("git://github.com/TAAPArthur/MPX-Patch.git")
+_srcDir="MPX-Patch"
 
 package() {
 

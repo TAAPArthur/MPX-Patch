@@ -66,22 +66,29 @@ void listen(){
 int main(){
 	init();
 
+    int swapKeyCpde=XKeysymToKeycode(dpy, XK_Super_L);
 	XEvent event;
 	XIDeviceEvent *devev;
 	XGenericEventCookie *cookie;
-	while(XNextEvent(dpy,&event)){
+	while(True){
+    	XNextEvent(dpy,&event);
 		cookie = &event.xcookie;
+		
 		if(XGetEventData(dpy, cookie)){
 			devev = cookie->data;
-			if(cookie->evtype==ButtonPress){
-				if(devev->detail == Button1)
+			if(cookie->evtype==XI_ButtonPress){
+				if(devev->detail == Button1)	
 					setClientPointerForWindow(devev);
+				
 			}
-			else
-				if(devev->detail == XK_Super_L)
+			else{
+			    
+				if(devev->detail == swapKeyCpde)
 					swapMasters(devev);
+			}
 		}
 	}
+	printf("exiting\n");
 
 }
 
@@ -95,12 +102,6 @@ int getAssociatedMasterDevice(int deviceId){
 	return id;
 }
 
-int getMasterPointerId(XIDeviceEvent *devev,Bool mouseEvent){
-	int id=(getAssociatedMasterDevice(devev->deviceid));
-	if (!mouseEvent&&devev->deviceid==devev->sourceid) //slave device
-		id=getAssociatedMasterDevice(id);
-	return id;
-}
 int endsWith(const char *str, const char *suffix)
 {
     if (!str || !suffix)
@@ -112,12 +113,13 @@ int endsWith(const char *str, const char *suffix)
     return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 void swapMasters(XIDeviceEvent *devev){
-
 	int masterPointer;
 	XIGetClientPointer(dpy, 0, &masterPointer);
 	int masterKeyboard=getAssociatedMasterDevice(masterPointer);
-	int pointer=getMasterPointerId(devev,True);
+	int pointer=getAssociatedMasterDevice(getAssociatedMasterDevice(devev->deviceid));
 	int keyboard=getAssociatedMasterDevice(pointer);
+	
+	//printf("%d %d %d %d",masterPointer,masterKeyboard,pointer,keyboard);
 	//only act if device isn't already default master
 	if(masterKeyboard==keyboard||masterPointer==pointer)
 		return;
@@ -185,7 +187,7 @@ void swapMasters(XIDeviceEvent *devev){
 }
 
 void setClientPointerForWindow(XIDeviceEvent *devev){
-	int id=getMasterPointerId(devev,False);
+	int id=getAssociatedMasterDevice(devev->deviceid);
 	Window w;
 	XIGetFocus(dpy, id, &w);
 	XISetClientPointer(dpy,w,id);
