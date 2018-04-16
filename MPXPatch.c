@@ -41,6 +41,7 @@ void init(){
 		exit(2);
 
 	root = DefaultRootWindow(dpy);
+	swapKeyCode=XKeysymToKeycode(dpy, XK_Escape);
 
 	//XSelectInput(dpy, root, KeyPressMask|KeyReleaseMask);
 	XSetErrorHandler(handleError);
@@ -66,10 +67,11 @@ void listen(){
 int main(){
 	init();
 
-    int swapKeyCpde=XKeysymToKeycode(dpy, XK_Super_L);
+
 	XEvent event;
 	XIDeviceEvent *devev;
 	XGenericEventCookie *cookie;
+	printf("starting");
 	while(True){
     	XNextEvent(dpy,&event);
 		cookie = &event.xcookie;
@@ -79,14 +81,14 @@ int main(){
 			if(cookie->evtype==XI_ButtonPress){
 				if(devev->detail == Button1)	
 					setClientPointerForWindow(devev);
-				
 			}
 			else{
-			    
-				if(devev->detail == swapKeyCpde)
+				if(devev->detail == swapKeyCode)
 					swapMasters(devev);
 			}
 		}
+		XFreeEventData(dpy, cookie);
+		printf("\n");
 	}
 	printf("exiting\n");
 
@@ -119,9 +121,11 @@ void swapMasters(XIDeviceEvent *devev){
 	int pointer=getAssociatedMasterDevice(getAssociatedMasterDevice(devev->deviceid));
 	int keyboard=getAssociatedMasterDevice(pointer);
 	
-	//printf("%d %d %d %d",masterPointer,masterKeyboard,pointer,keyboard);
+	printf("%d %d %d %d",masterPointer,masterKeyboard,pointer,keyboard);
 	//only act if device isn't already default master
 	if(masterKeyboard==keyboard||masterPointer==pointer)
+		return;
+	if(masterKeyboard==pointer || masterPointer==keyboard)
 		return;
 
 	//swap keyboard focus
@@ -129,6 +133,11 @@ void swapMasters(XIDeviceEvent *devev){
 	Window keyboardFocus;
 	XIGetFocus(dpy, masterKeyboard, &masterKeyboardFocus);
 	XIGetFocus(dpy, keyboard, &keyboardFocus);
+
+	if(masterKeyboardFocus==0 ||keyboardFocus==0)
+		return;
+
+	printf("Window master:%lu other:%lu",masterKeyboardFocus,keyboardFocus);
 
 	XISetFocus(dpy, keyboard, masterKeyboardFocus, CurrentTime);
 	XISetFocus(dpy,  masterKeyboard, keyboardFocus,CurrentTime);
@@ -144,8 +153,11 @@ void swapMasters(XIDeviceEvent *devev){
 	double masterX,masterY;
 	XIQueryPointer(dpy, pointer, root, &wIgnore, &wIgnore, &x, &y, &ignore, &ignore, &buttons, &mods, &group);
 	XIQueryPointer(dpy, masterPointer, root, &wIgnore, &wIgnore, &masterX, &masterY,&ignore, &ignore, &buttons, &mods, &group);
+	printf("POS master:%f,%f other:%f,%f",x,y,masterX,masterY);
 	XIWarpPointer(dpy, masterPointer, None, root,0,0,0,0, x,y);
 	XIWarpPointer(dpy, pointer, None, root,0,0,0,0, masterX, masterY);
+
+
 
 	int ndevices;
 	XIDeviceInfo *devices, device;
@@ -183,12 +195,17 @@ void swapMasters(XIDeviceEvent *devev){
 	}
 	XIChangeHierarchy(dpy, changes, actualChanges);
 	XIFreeDeviceInfo(devices);
+
 	XFlush(dpy);
+
+	printf("\n");
 }
 
 void setClientPointerForWindow(XIDeviceEvent *devev){
-	int id=getAssociatedMasterDevice(devev->deviceid);
+	int pointerId=getAssociatedMasterDevice(devev->deviceid);
+	int keyboardId=getAssociatedMasterDevice(pointerId);
+
 	Window w;
-	XIGetFocus(dpy, id, &w);
-	XISetClientPointer(dpy,w,id);
+	XIGetFocus(dpy, keyboardId, &w);
+	XISetClientPointer(dpy,w,pointerId);
 }

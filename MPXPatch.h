@@ -6,7 +6,7 @@
 
 Display *dpy = NULL;
 Window root;
-
+int swapKeyCode;
 
 
 void listen();
