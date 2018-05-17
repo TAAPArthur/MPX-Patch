@@ -151,7 +151,7 @@ void swapMasters(XIDeviceEvent *devev){
 	XIGroupState        group;
 	double x,y;
 	double masterX,masterY;
-	XIQueryPointer(dpy, pointer, root, &wIgnore, &wIgnore, &x, &y, &ignore, &ignore, &buttons, &mods, &group);
+	XIQueryPointer(dpy, pointer,root, &wIgnore, &wIgnore, &x, &y, &ignore, &ignore, &buttons, &mods, &group);
 	XIQueryPointer(dpy, masterPointer, root, &wIgnore, &wIgnore, &masterX, &masterY,&ignore, &ignore, &buttons, &mods, &group);
 	printf("POS master:%f,%f other:%f,%f",x,y,masterX,masterY);
 	XIWarpPointer(dpy, masterPointer, None, root,0,0,0,0, x,y);
@@ -205,7 +205,14 @@ void setClientPointerForWindow(XIDeviceEvent *devev){
 	int pointerId=getAssociatedMasterDevice(devev->deviceid);
 	int keyboardId=getAssociatedMasterDevice(pointerId);
 
-	Window w;
-	XIGetFocus(dpy, keyboardId, &w);
-	XISetClientPointer(dpy,w,pointerId);
+	double ignore;
+	Window wIgnore,clientWindow;
+	XIButtonState       buttons;
+	XIModifierState     mods;
+	XIGroupState        group;
+	XIQueryPointer(dpy, pointerId, root, &wIgnore,&clientWindow, &ignore, &ignore,&ignore, &ignore, &buttons, &mods, &group);
+
+	//XIGetFocus(dpy, keyboardId, &w);
+	XISetFocus(dpy, keyboardId, clientWindow, 0);
+	XISetClientPointer(dpy,clientWindow,pointerId);
 }

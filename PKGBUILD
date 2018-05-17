@@ -2,7 +2,7 @@
 
 
 pkgname='mpx-patch'
-pkgver='1.0.0'
+pkgver='1.1.0'
 _language='en-US'
 pkgrel=1
 pkgdesc='Control mouse from keyboard'
@@ -14,7 +14,10 @@ md5sums=('SKIP')
 
 source=("git://github.com/TAAPArthur/MPX-Patch.git")
 _srcDir="MPX-Patch"
-
+build(){
+  cd "$_srcDir"
+  gcc -o mpx-patch -std=c99 -Os  MPXPatch.c -s -lX11 -lXtst -lXi
+}
 package() {
 
   cd "$_srcDir"
