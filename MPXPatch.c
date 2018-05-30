@@ -204,15 +204,16 @@ void swapMasters(XIDeviceEvent *devev){
 void setClientPointerForWindow(XIDeviceEvent *devev){
 	int pointerId=getAssociatedMasterDevice(devev->deviceid);
 	int keyboardId=getAssociatedMasterDevice(pointerId);
-
+	Window clientWindow;
+	/*
 	double ignore;
 	Window wIgnore,clientWindow;
 	XIButtonState       buttons;
 	XIModifierState     mods;
 	XIGroupState        group;
 	XIQueryPointer(dpy, pointerId, root, &wIgnore,&clientWindow, &ignore, &ignore,&ignore, &ignore, &buttons, &mods, &group);
-
-	//XIGetFocus(dpy, keyboardId, &w);
-	XISetFocus(dpy, keyboardId, clientWindow, 0);
+	*/
+	XIGetFocus(dpy, keyboardId, &clientWindow);
+	//XISetFocus(dpy, keyboardId, clientWindow, 0);
 	XISetClientPointer(dpy,clientWindow,pointerId);
 }

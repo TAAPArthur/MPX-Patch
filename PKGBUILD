@@ -2,7 +2,7 @@
 
 
 pkgname='mpx-patch'
-pkgver='1.1.0'
+pkgver='1.1.2'
 _language='en-US'
 pkgrel=1
 pkgdesc='Control mouse from keyboard'
