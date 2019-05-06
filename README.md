@@ -1,3 +1,5 @@
+*This project is deprecated. The functionality has been absorbed into [MPXManager](https://github.com/TAAPArthur/MyPersonalXwindowManager)*
+
 #MPX-Patch
 MPX support has been in built into X11 for years but so many applications/WM do not have full support. MPX-Patch aims to provide a MPX experience in these unfortunate situations.
 
